@@ -1,9 +1,10 @@
-language: android
+dist: trusty
+os: linux
+language: generic
 jdk: oraclejdk8
 
 env:
-  global:
-    - ADB_INSTALL_TIMEOUT=8
+  - SYS=28 ABI="google_apis;x86_64"
 
 branches:
   only:
@@ -11,14 +12,29 @@ branches:
     - /feature\/.*/
 
 before_install:
-    - mkdir "$ANDROID_HOME/licenses" || true
-    - echo -e "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e" > "$ANDROID_HOME/licenses/android-sdk-license"
-    - echo -e "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > "$ANDROID_HOME/licenses/android-sdk-preview-license"
-    - yes | sdkmanager "platforms;android-28"
-
-android:
-  components:
-    - tools
+  # start X virtual framebuffer
+#  - {
+#      export DISPLAY=:99.0
+#      sh -e /etc/init.d/xvfb start
+#      sleep 3 # give xvfb some time to start
+#  }
+  # Install Android SDK tools
+  - ANDROID_SDK_TOOLS=4333796 # android-28
+  - export ANDROID_HOME=~/android-sdk
+  - wget -q "https://dl.google.com/android/repository/sdk-tools-linux-ANDROID_SDK_TOOLS.zip" -O android-sdk-tools.zip
+  - PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
+  # Silence warning
+  - mkdir -p ~/.android
+  - touch ~/.android/repositories.cfg
+  # Accept licenses before installing components, no need to echo y for each component
+  - yes | sdkmanager --licenses
+  # Update/Install android tools
+  - sdkmanager --channel=0 "tools" "build-tools" "platform-tools" "platforms;android-28" "emulator" "system-images;android-$SYS;$ABI"
+  - sdkmanager --list | head -15
+  - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
+  - EMU_OPTIONS="-no-accel -no-boot-anim -gpu off -no-audio"
+  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS
+  - ./scripts/android-wait-for-emulator.sh
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -31,20 +47,21 @@ cache:
     - $HOME/.m2
     - $HOME/.android/build-cache
 
-before_script:
+#before_script:
     #- $ANDROID_HOME/tools/bin/sdkmanager --channel=0 "tools" "platform-tools" "build-tools;28.0.1" "platforms;android-28" "platforms;android-21" "system-images;android-24;default;armeabi-v7a"
     #- $ANDROID_HOME/tools/bin/sdkmanager --channel=0 "tools" "platform-tools" "build-tools;28.0.1" "platforms;android-28" "platforms;android-21" "system-images;android-24;google_apis;x86"
-    - $ANDROID_HOME/tools/bin/sdkmanager --channel=0 "tools" "platform-tools" "build-tools;28.0.1" "platforms;android-28" "platforms;android-21" "system-images;android-24;google_apis;x86_64"
+    #- $ANDROID_HOME/tools/bin/sdkmanager --channel=0 "tools" "platform-tools" "build-tools;28.0.1" "platforms;android-28" "platforms;android-21" "system-images;android-24;google_apis;x86_64"
+#  -     - $ANDROID_HOME/tools/bin/sdkmanager --channel=0 "tools" "platform-tools" "build-tools;28.0.1" "platforms;android-28" "platforms;android-21" "system-images;android-24;google_apis;x86_64"
     #- echo no | $ANDROID_HOME/tools/bin/avdmanager create avd -f -n test -k "system-images;android-24;default;armeabi-v7a"
-    - echo no | $ANDROID_HOME/tools/bin/avdmanager create avd -f -n test -k "system-images;android-24;google_apis;x86_64"
-    - echo 'disk.dataPartition.size=512M' >> ~/.android/avd/test.avd/config.ini
-    - $ANDROID_HOME/emulator/emulator -avd test -no-accel -gpu swiftshader -camera-back none -camera-front none -no-boot-anim -no-snapshot-save -no-snapstorage -no-audio -no-window &
-    - rm gradle.properties
-    - mv ci.properties gradle.properties
+#    - echo no | $ANDROID_HOME/tools/bin/avdmanager create avd -f -n test -k "system-images;android-24;google_apis;x86_64"
+    #- echo 'disk.dataPartition.size=512M' >> ~/.android/avd/test.avd/config.ini
+#    - $ANDROID_HOME/emulator/emulator -avd test -no-accel -gpu swiftshader -camera-back none -camera-front none -no-boot-anim -no-snapshot-save -no-snapstorage -no-audio -no-window &
+#    - rm gradle.properties
+#    - mv ci.properties gradle.properties
 
 script:
     - chmod +x gradlew
-    - android-wait-for-emulator
+#    - android-wait-for-emulator
 #    - ./gradlew jacocoTestReport
 
     #- adb shell input keyevent 82 &
