@@ -31,7 +31,7 @@ before_install:
   # Accept licenses before installing components, no need to echo y for each component
   - yes | sdkmanager --licenses
   # Update/Install android tools
-  - sdkmanager --channel=0 "tools" "build-tools;28.0.3" "platform-tools" "platforms;android-28" "emulator" "system-images;android-$SYS;$ABI"
+  - sdkmanager --channel=0 "tools" "build-tools;28.0.3" "platform-tools" "platforms;android-28" "emulator" "system-images;android-$SYS;$ABI" > /dev/null
   - sdkmanager --list | head -15
   - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
   - EMU_OPTIONS="-no-accel -no-boot-anim -gpu off -no-audio"
