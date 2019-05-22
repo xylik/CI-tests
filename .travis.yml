@@ -4,6 +4,8 @@ language: generic
 jdk: oraclejdk8
 
 env:
+  global:
+    - ADB_INSTALL_TIMEOUT=8 # minutes
   - SYS=24 ABI="google_apis;x86_64"
 
 branches:
@@ -34,10 +36,12 @@ before_install:
   - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
   - cat ~/.android/avd/test.avd/config.ini | head -30
 #  - echo 'hw.gpu.enabled=no' >> ~/.android/avd/test.avd/config.ini
-  - EMU_OPTIONS="-no-accel -no-audio" #-gpu off -no-boot-anim
+  - EMU_OPTIONS="-no-accel -no-audio -no-boot-anim" #-gpu off -no-boot-anim
   - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
+#  - chmod +x ./scripts/wait-for-emulator.sh
 #  - ./scripts/android-wait-for-emulator.sh
-  - android-wait-for-emulator
+  - chmod +x ./scripts/wait-for-emulator.sh
+  - ./scripts/wait-for-emulator.sh
 
 
 before_cache:
