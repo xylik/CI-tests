@@ -1,4 +1,4 @@
-sleep 700 #estimated time before instrumentation test starts running
+sleep 600 #estimated time for emulator to completly boot up
 # Send keystroke Arrow Right
 sleep 3; adb shell input keyevent 22
 # Send keystroke Arrow Right again

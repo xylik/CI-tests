@@ -55,8 +55,8 @@ script:
   - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
   - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
   #wait for emulator
-  - chmod +x ./scripts/android-wait-for-emulator.sh
-  - ./scripts/android-wait-for-emulator.sh
+#  - chmod +x ./scripts/android-wait-for-emulator.sh
+#  - ./scripts/android-wait-for-emulator.sh
   #close anr dialog
   - chmod +x ./scripts/close-anr.sh
   - ./scripts/close-anr.sh &
