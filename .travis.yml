@@ -48,9 +48,11 @@ before_install:
   - sdkmanager --list | head -15
   - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
   - cat ~/.android/avd/test.avd/config.ini | head -30
-  #  - echo 'hw.gpu.enabled=no' >> ~/.android/avd/test.avd/config.ini
-  - EMU_OPTIONS="-no-audio -no-boot-anim -gpu off"
-  - $ANDROID_HOME/emulator/emulator-headless -no-accel -avd test $EMU_OPTIONS &
+  #check hardware accelaration support
+  - $ANDROID_HOME/emulator/emulator -accel-check
+  #start emulator
+  - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
+  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
 
 before_script:
   # Wait for emulator to startup.
@@ -58,8 +60,8 @@ before_script:
   - ./scripts/android-wait-for-emulator.sh
 
 script:
+  - chmod +x gradlew
+  - adb logcat -s TestRunner:V & LOGCAT_PID=$!
+  - ./gradlew connectedAndroidTest --stacktrace
+  - if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
   - echo "Done."
-#    - chmod +x gradlew
-#    - adb logcat -s TestRunner:V & LOGCAT_PID=$!
-#    - ./gradlew connectedAndroidTest --stacktrace
-#    - if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
