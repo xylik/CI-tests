@@ -59,7 +59,7 @@ script:
 #  - ./scripts/android-wait-for-emulator.sh
   #close anr dialog
   - chmod +x ./scripts/close-anr.sh
-  - ./scripts/close-anr.sh &
+  - ./scripts/close-anr.sh
   #start ui tests
   - chmod +x gradlew
   - adb logcat -s TestRunner:V & LOGCAT_PID=$!
