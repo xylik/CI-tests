@@ -36,7 +36,9 @@ before_install:
 #  - echo 'hw.gpu.enabled=no' >> ~/.android/avd/test.avd/config.ini
   - EMU_OPTIONS="-no-accel -no-audio" #-gpu off -no-boot-anim
   - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
-  - ./scripts/android-wait-for-emulator.sh
+#  - ./scripts/android-wait-for-emulator.sh
+  - android-wait-for-emulator
+
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
