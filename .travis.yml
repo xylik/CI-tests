@@ -33,10 +33,10 @@ before_install:
   - sdkmanager --list | head -15
   - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
   - cat ~/.android/avd/test.avd/config.ini | head -30
-  - echo 'hw.gpu.enabled=no' >> ~/.android/avd/test.avd/config.ini
+#  - echo 'hw.gpu.enabled=no' >> ~/.android/avd/test.avd/config.ini
   - EMU_OPTIONS="-no-accel -no-audio" #-gpu off -no-boot-anim
-  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS
-#  - ./scripts/android-wait-for-emulator.sh
+  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
+  - ./scripts/android-wait-for-emulator.sh
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
