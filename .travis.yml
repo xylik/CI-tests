@@ -14,7 +14,6 @@ branches:
     - master
     - /feature\/.*/
 
-
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution
@@ -48,18 +47,17 @@ before_install:
   - sdkmanager --list | head -15
   - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
   - cat ~/.android/avd/test.avd/config.ini | head -30
-  #check hardware accelaration support
+
+script:
+  #check hardware acceleration support
   - $ANDROID_HOME/emulator/emulator -accel-check
   #start emulator
   - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
   - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
-
-before_script:
-  # Wait for emulator to startup.
+  #wait for emulator
   - chmod +x ./scripts/android-wait-for-emulator.sh
   - ./scripts/android-wait-for-emulator.sh
-
-script:
+  #start ui tests
   - chmod +x gradlew
   - adb logcat -s TestRunner:V & LOGCAT_PID=$!
   - ./gradlew connectedAndroidTest --stacktrace
