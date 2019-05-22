@@ -57,9 +57,12 @@ script:
   #wait for emulator
   - chmod +x ./scripts/android-wait-for-emulator.sh
   - ./scripts/android-wait-for-emulator.sh
+  #close anr dialog
+  - chmod +x ./scripts/close-anr.sh
+  - ./scripts/close-anr.sh &
   #start ui tests
   - chmod +x gradlew
   - adb logcat -s TestRunner:V & LOGCAT_PID=$!
-  - ./gradlew connectedAndroidTest --stacktrace
+  - TERM=dumb ./gradlew connectedAndroidTest --stacktrace
   - if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
   - echo "Done."
