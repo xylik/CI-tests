@@ -4,7 +4,7 @@ language: generic
 jdk: oraclejdk8
 
 env:
-  - SYS=28 ABI="google_apis;x86_64"
+  - SYS=24 ABI="google_apis;x86_64"
 
 branches:
   only:
@@ -13,9 +13,9 @@ branches:
 
 before_install:
   # start X virtual framebuffer
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - sleep 3 # give xvfb some time to start
+#  - export DISPLAY=:99.0
+#  - sh -e /etc/init.d/xvfb start
+#  - sleep 3 # give xvfb some time to start
   # Install Android SDK tools
   - ANDROID_SDK_TOOLS=4333796 # android-28
   - export ANDROID_HOME=~/android-sdk
@@ -32,7 +32,9 @@ before_install:
   - sdkmanager --channel=0 "tools" "build-tools;28.0.3" "platform-tools" "platforms;android-28" "emulator" "system-images;android-$SYS;$ABI" > /dev/null
   - sdkmanager --list | head -15
   - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
-  - EMU_OPTIONS="-no-accel -no-boot-anim -gpu off -no-audio"
+  - cat ~/.android/avd/test.avd/config.ini | head 30
+  - echo 'hw.gpu.enabled=no' >> ~/.android/avd/test.avd/config.ini
+  - EMU_OPTIONS="-no-accel -no-boot-anim -no-audio" #-gpu off
   - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS
 #  - ./scripts/android-wait-for-emulator.sh
 
