@@ -6,7 +6,8 @@ jdk: oraclejdk8
 env:
   global:
     - ADB_INSTALL_TIMEOUT=8 # minutes
-  - SYS=24 ABI="google_apis;x86_64"
+  matrix:
+    - SYS=24 ABI="google_apis;x86_64"
 
 branches:
   only:
