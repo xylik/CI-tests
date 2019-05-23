@@ -5,72 +5,13 @@ sudo: required
 dist: trusty
 os: linux
 language: generic
-jdk: oraclejdk8
-
-env:
-  global:
-    - ADB_INSTALL_TIMEOUT=8 # minutes
-  matrix:
-    - SYS=24 ABI="google_apis;x86_64"
 
 branches:
   only:
-    - master
-    - /feature\/.*/
+    - config-test
 
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution
-
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    - $HOME/.m2
-    - $HOME/.android/build-cache
-
-before_install:
-  # start X virtual framebuffer
-  #  - export DISPLAY=:99.0
-  #  - sh -e /etc/init.d/xvfb start
-  #  - sleep 3 # give xvfb some time to start
-  # Install Android SDK tools
-  - ANDROID_SDK_TOOLS=4333796 # android-28
-  - export ANDROID_HOME=~/android-sdk
-  - wget -q "https://dl.google.com/android/repository/sdk-tools-linux-$ANDROID_SDK_TOOLS.zip" -O android-sdk-tools.zip
-  - unzip -q android-sdk-tools.zip -d ${ANDROID_HOME}
-  - rm android-sdk-tools.zip
-  - PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
-  # Silence warning
-  - mkdir -p ~/.android
-  - touch ~/.android/repositories.cfg
-  # Accept licenses before installing components, no need to echo y for each component
-  - yes | sdkmanager --licenses
-  # Update/Install android tools
-  - sdkmanager --channel=0 "tools" "build-tools;28.0.3" "platform-tools" "platforms;android-28" "emulator" "system-images;android-$SYS;$ABI" > /dev/null
-  - sdkmanager --list | head -15
-  - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
-  - cat ~/.android/avd/test.avd/config.ini | head -30
+before_install: true
 
 script:
   #check gpu
-  - sudo lshw -C display
-  #check VM hardware acceleration support
-  - $ANDROID_HOME/emulator/emulator -accel-check
-  #start emulator
-#  - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
-#  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
-  - EMU_OPTIONS="-no-accel -gpu host -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
-  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
-  #wait for emulator
-#  - chmod +x ./scripts/android-wait-for-emulator.sh
-#  - ./scripts/android-wait-for-emulator.sh
-  #close anr dialog
-  - chmod +x ./scripts/close-anr.sh
-  - ./scripts/close-anr.sh
-  #start ui tests
-  - chmod +x gradlew
-  - adb logcat -s TestRunner:V & LOGCAT_PID=$!
-  - TERM=dumb ./gradlew connectedAndroidTest --stacktrace
-  - if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
-  - echo "Done."
+  - sudo lshw -short
