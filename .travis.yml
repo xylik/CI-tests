@@ -59,9 +59,7 @@ script:
   #check VM hardware acceleration support
   - $ANDROID_HOME/emulator/emulator -accel-check
   #start emulator
-#  - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
-#  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
-  - EMU_OPTIONS="-no-accel -gpu host -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
+  - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
   - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
   #wait for emulator
 #  - chmod +x ./scripts/android-wait-for-emulator.sh
