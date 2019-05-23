@@ -16,6 +16,7 @@ env:
 branches:
   only:
     - master
+    - config-test
     - /feature\/.*/
 
 before_cache:
