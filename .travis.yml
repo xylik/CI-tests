@@ -1,3 +1,7 @@
+# sudo: false --> run dist image in docker container on shared host for faster startup (runs slower)
+# sudo: required --> run dist image in VM on Google Compute Engine for slower startup (runs faster)
+# sudo and dist are ignored on osx
+sudo: required
 dist: trusty
 os: linux
 language: generic
@@ -49,10 +53,14 @@ before_install:
   - cat ~/.android/avd/test.avd/config.ini | head -30
 
 script:
-  #check hardware acceleration support
+  #check gpu
+  - sudo lshw -C display
+  #check VM hardware acceleration support
   - $ANDROID_HOME/emulator/emulator -accel-check
   #start emulator
-  - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
+#  - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
+#  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
+  - EMU_OPTIONS="-no-accel -gpu host -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
   - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
   #wait for emulator
 #  - chmod +x ./scripts/android-wait-for-emulator.sh
