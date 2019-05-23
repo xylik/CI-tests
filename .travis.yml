@@ -15,3 +15,4 @@ before_install: true
 script:
   #check gpu
   - sudo lshw -short
+  - exit 1 #so that machine can be debuged
