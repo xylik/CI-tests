@@ -9,15 +9,14 @@ jdk: oraclejdk8
 
 env:
   global:
-    - ADB_INSTALL_TIMEOUT=8 # minutes
+    - ADB_INSTALL_TIMEOUT=10 # minutes
   matrix:
-    - SYS=24 ABI="google_apis;x86_64"
+    - SYS=28 ABI="google_apis;x86_64"
+    - SYS=28 ABI="google_apis;x86"
 
 branches:
   only:
     - master
-    - config-test
-    - /feature\/.*/
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -54,8 +53,10 @@ before_install:
   - cat ~/.android/avd/test.avd/config.ini | head -30
 
 script:
-  #check gpu
+  #list hardware spec
   - sudo lshw -C display
+  - sudo lshw -C processor
+  - sudo lscpu
   #check VM hardware acceleration support
   - $ANDROID_HOME/emulator/emulator -accel-check
   #start emulator
