@@ -9,10 +9,12 @@ jdk: oraclejdk8
 
 env:
   global:
+    - GRADLE_OPTS='-Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dkotlin.incremental=false -DdisablePreDex'
     - ADB_INSTALL_TIMEOUT=10 # minutes
   matrix:
-    - SYS=28 ABI="google_apis;x86_64"
-    - SYS=28 ABI="google_apis;x86"
+    #- SYS=28 ABI="google_apis;x86_64"
+    #- SYS=28 ABI="google_apis;x86"
+    - SYS=22 ABI="default;armeabi-v7a"
 
 branches:
   only:
@@ -52,19 +54,33 @@ before_install:
   - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
   - cat ~/.android/avd/test.avd/config.ini | head -30
 
+before_script:
+  - sudo service postgresql stop || true
+  - sudo service mysql stop || true
+  - sudo service memcached stop || true
+  - sudo service bootlogd stop || true
+  - sudo service elasticsearch stop || true
+  - sudo service mongodb stop || true
+  - sudo service cassandra stop || true
+  - sudo service rsync stop || true
+  - sudo service x11-common stop || true
+
 script:
   #list hardware spec
   - sudo lshw -C display
   - sudo lshw -C processor
   - sudo lscpu
   #check VM hardware acceleration support
-  - $ANDROID_HOME/emulator/emulator -accel-check
+  #- $ANDROID_HOME/emulator/emulator -accel-check
   #start emulator
-  - EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
-  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
+  #- EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
+  #- $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
+  - EMU_OPTIONS="-no-window"
+  #- $ANDROID_HOME/emulator/emulator -avd test $EMU_OPTIONS &
+  - $ANDROID_HOME/tools/emulator -avd test $EMU_OPTIONS &
   #wait for emulator
-#  - chmod +x ./scripts/android-wait-for-emulator.sh
-#  - ./scripts/android-wait-for-emulator.sh
+  - chmod +x ./scripts/android-wait-for-emulator.sh
+  - ./scripts/android-wait-for-emulator.sh
   #close anr dialog
   - chmod +x ./scripts/close-anr.sh
   - ./scripts/close-anr.sh
