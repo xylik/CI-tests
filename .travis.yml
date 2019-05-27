@@ -1,58 +1,33 @@
-# sudo: false --> run dist image in docker container on shared host for faster startup (runs slower)
-# sudo: required --> run dist image in VM on Google Compute Engine for slower startup (runs faster)
-# sudo and dist are ignored on osx
-sudo: required
-dist: trusty
-os: linux
-language: generic
+sudo: true
+
+language: android
+
 jdk: oraclejdk8
 
 env:
   global:
     - GRADLE_OPTS='-Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dkotlin.incremental=false -DdisablePreDex'
-    - ADB_INSTALL_TIMEOUT=10 # minutes
-  matrix:
-    #- SYS=28 ABI="google_apis;x86_64"
-    #- SYS=28 ABI="google_apis;x86"
-    - SYS=22 ABI="default;armeabi-v7a"
+    - ANDROID_TARGET=android-27
+    - ANDROID_BUILD_TOOLS_VERSION=27.0.3
+    - ANDROID_ABI=armeabi-v7a
+    - ANDROID_EMULATOR_TARGET=android-22
 
-branches:
-  only:
-    - master
+android:
+  components:
+    - tools
+    - build-tools-$ANDROID_BUILD_TOOLS_VERSION
+    - $ANDROID_TARGET
+    - $ANDROID_EMULATOR_TARGET
+    - extra-google-google_play_services
+    - extra-android-support
+    - extra
+    - sys-img-$ANDROID_ABI-$ANDROID_EMULATOR_TARGET
 
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution
-
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
-    - $HOME/.m2
-    - $HOME/.android/build-cache
+licenses:
+  - 'android-sdk-license-.+'
 
 before_install:
-  # start X virtual framebuffer
-  #  - export DISPLAY=:99.0
-  #  - sh -e /etc/init.d/xvfb start
-  #  - sleep 3 # give xvfb some time to start
-  # Install Android SDK tools
-  - ANDROID_SDK_TOOLS=4333796 # android-28
-  - export ANDROID_HOME=~/android-sdk
-  - wget -q "https://dl.google.com/android/repository/sdk-tools-linux-$ANDROID_SDK_TOOLS.zip" -O android-sdk-tools.zip
-  - unzip -q android-sdk-tools.zip -d ${ANDROID_HOME}
-  - rm android-sdk-tools.zip
-  - PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/tools/bin:${ANDROID_HOME}/platform-tools
-  # Silence warning
-  - mkdir -p ~/.android
-  - touch ~/.android/repositories.cfg
-  # Accept licenses before installing components, no need to echo y for each component
-  - yes | sdkmanager --licenses
-  # Update/Install android tools
-  - sdkmanager --channel=0 "tools" "build-tools;28.0.3" "platform-tools" "platforms;android-28" "emulator" "system-images;android-$SYS;$ABI" > /dev/null
-  - sdkmanager --list | head -15
-  - echo no | avdmanager create avd -f -n test -k "system-images;android-$SYS;$ABI"
-  - cat ~/.android/avd/test.avd/config.ini | head -30
+  - echo yes | sdkmanager "platforms;$ANDROID_TARGET" "build-tools;$ANDROID_BUILD_TOOLS_VERSION"
 
 before_script:
   - sudo service postgresql stop || true
@@ -66,27 +41,10 @@ before_script:
   - sudo service x11-common stop || true
 
 script:
-  #list hardware spec
-  - sudo lshw -C display
-  - sudo lshw -C processor
-  - sudo lscpu
-  #check VM hardware acceleration support
-  #- $ANDROID_HOME/emulator/emulator -accel-check
-  #start emulator
-  #- EMU_OPTIONS="-no-accel -gpu swiftshader_indirect -memory 1500 -no-audio -no-boot-anim -camera-back none -camera-front none -no-snapshot -wipe-data"
-  #- $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
-  - EMU_OPTIONS="-no-window"
-  - $ANDROID_HOME/emulator/emulator -avd test $EMU_OPTIONS &
-  #- $ANDROID_HOME/tools/emulator -avd test $EMU_OPTIONS &
-  #wait for emulator
-  - chmod +x ./scripts/android-wait-for-emulator.sh
-  - ./scripts/android-wait-for-emulator.sh
-  #close anr dialog
-  - chmod +x ./scripts/close-anr.sh
-  - ./scripts/close-anr.sh
-  #start ui tests
-  - chmod +x gradlew
-  - adb logcat -s TestRunner:V & LOGCAT_PID=$!
-  - TERM=dumb ./gradlew connectedAndroidTest --stacktrace
-  - if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
-  - echo "Done."
+  - sdkamanager --list
+  - echo no | android create avd --force -n test -t $ANDROID_EMULATOR_TARGET --abi $ANDROID_ABI
+  - emulator -avd test -no-window &
+  - ./gradlew check
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+  - ./gradlew connectedDebugAndroidTest
