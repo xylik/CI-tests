@@ -59,15 +59,16 @@ script:
   #list hardware spec
   - sudo lshw -C display
   - sudo lshw -C processor
-  - sudo lscpu
+  #- sudo lscpu
 
   #check VM hardware acceleration support
   #- $ANDROID_HOME/emulator/emulator -accel-check
 
   #start emulator
   - EMU_GPU="swiftshader_indirect" #guest,off
-  - EMU_OPTIONS="-no-window -no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
-  - $ANDROID_HOME/emulator/emulator -avd test $EMU_OPTIONS &
+  #- EMU_OPTIONS="-no-window -no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
+  - EMU_OPTIONS="-no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
+  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
 
   #wait for emulator
   - chmod +x ./scripts/android-wait-for-emulator.sh
