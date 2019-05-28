@@ -1,10 +1,7 @@
-adb wait-for-device
-
-A=$(adb shell getprop sys.boot_completed | tr -d '\r')
-echo $A
-
-while [ "$A" != "1" ]; do
-        sleep 2
-        A=$(adb shell getprop sys.boot_completed | tr -d '\r')
-        echo "Waiting for emulator to start"
+#!/bin/bash
+for i in {1..20}
+do
+    echo "Waiting for emulator"
+    sleep 30 #20*30=600s estimated time for emulator to completely boot up
 done
+echo "Waiting finished"
