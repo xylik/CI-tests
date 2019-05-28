@@ -74,11 +74,12 @@ script:
   - $ANDROID_HOME/emulator/emulator -avd test $EMU_OPTIONS &
 
   #wait for emulator
+  - chmod +x ./scripts/android-wait-for-emulator.sh
+  - ./scripts/android-wait-for-emulator.sh
+  - chmod +x ./scripts/close-anr.sh
+  - ./scripts/close-anr.sh
   - chmod +x ./scripts/wait-for-emulator.sh
   - ./scripts/wait-for-emulator.sh
-
-  #close anr dialog
-  - chmod +x ./scripts/close-anr.sh
   - ./scripts/close-anr.sh
 
   #start ui tests
