@@ -12,9 +12,13 @@ env:
     #- GRADLE_OPTS='-Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dkotlin.incremental=false -DdisablePreDex'
     - ADB_INSTALL_TIMEOUT=10 # minutes
   matrix:
-    #- SYS=28 ABI="google_apis;x86"
-    #- SYS=22 ABI="default;x86"
+    #- SYS=22 API="default" ABI="x86"
     - SYS=23 API="default" ABI="x86"
+    - SYS=24 API="default" ABI="x86"
+    - SYS=25 API="default" ABI="x86"
+    - SYS=26 API="default" ABI="x86"
+    - SYS=27 API="default" ABI="x86"
+    - SYS=28 API="default" ABI="x86"
 
 branches:
   only:
@@ -59,24 +63,23 @@ script:
   #list hardware spec
   - sudo lshw -C display
   - sudo lshw -C processor
-  #- sudo lscpu
 
   #check VM hardware acceleration support
   #- $ANDROID_HOME/emulator/emulator -accel-check
 
   #start emulator
   - EMU_GPU="swiftshader_indirect" #guest,off
-  #- EMU_OPTIONS="-no-window -no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
-  - EMU_OPTIONS="-no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
-  - $ANDROID_HOME/emulator/emulator-headless -avd test $EMU_OPTIONS &
+  - EMU_OPTIONS="-no-window -no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
+  #- EMU_OPTIONS="-no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
+  - $ANDROID_HOME/emulator/emulator -avd test $EMU_OPTIONS &
 
   #wait for emulator
   - chmod +x ./scripts/android-wait-for-emulator.sh
   - ./scripts/android-wait-for-emulator.sh
 
   #close anr dialog
-  #- chmod +x ./scripts/close-anr.sh
-  #- ./scripts/close-anr.sh
+  - chmod +x ./scripts/close-anr.sh
+  - ./scripts/close-anr.sh
 
   #start ui tests
   - chmod +x gradlew
