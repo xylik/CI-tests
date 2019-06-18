@@ -76,6 +76,7 @@ script:
   - sudo lshw -C display
   - sudo lshw -C processor
   - sudo openssl version
+  - sudo openssl enc -help
 
   #check VM hardware acceleration support
   #- $ANDROID_HOME/emulator/emulator -accel-check
@@ -109,6 +110,6 @@ script:
   - gcloud firebase test android run
     --type instrumentation
     --app scripts/dummy-instrumentation.apk
-    --test app/build/outputs/apk/debug/app-debug.apk
+    --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
     --device model=NexusLowRes,version=24,locale=de,orientation=portrait
     --timeout 300s
