@@ -69,12 +69,13 @@ before_install:
   - openssl enc -aes-256-cbc -md sha256 -d -pass pass:$FIREBASE_JSON_PASS -in gcloud-service-key.json.enc -out gcloud-service-key.json
   - gcloud auth activate-service-account --key-file gcloud-service-key.json
   # Setup Google Cloud project
-  - gcloud config set project "firebase-playground"
+  - gcloud config set project "fir-playground-a893c"
 
 script:
   #list hardware spec
   - sudo lshw -C display
   - sudo lshw -C processor
+  - sudo openssl version
 
   #check VM hardware acceleration support
   #- $ANDROID_HOME/emulator/emulator -accel-check
