@@ -66,7 +66,7 @@ before_install:
   - gcloud --quiet version
   - gcloud --quiet components update
   # Activate Google Cloud credentials
-  - openssl enc -aes-256-cbc -md sha256 -d -pass pass:$FIREBASE_JSON_PASS -in gcloud-service-key.json.enc -out gcloud-service-key.json
+  - openssl enc -d -aes-256-cbc -md sha256 -k $FIREBASE_JSON_PASS -in gcloud-service-key.json.enc -out gcloud-service-key.json
   - gcloud auth activate-service-account --key-file gcloud-service-key.json
   # Setup Google Cloud project
   - gcloud config set project "fir-playground-a893c"
@@ -76,7 +76,6 @@ script:
   - sudo lshw -C display
   - sudo lshw -C processor
   - sudo openssl version
-  - sudo openssl enc -help
 
   #check VM hardware acceleration support
   #- $ANDROID_HOME/emulator/emulator -accel-check
@@ -109,7 +108,7 @@ script:
   #run firebase tests
   - gcloud firebase test android run
     --type instrumentation
-    --app scripts/dummy-instrumentation.apk
+    --app app/build/outputs/apk/debug/app-debug.apk
     --test app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
     --device model=NexusLowRes,version=24,locale=de,orientation=portrait
     --timeout 300s
