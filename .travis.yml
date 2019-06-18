@@ -102,7 +102,7 @@ script:
   #- if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
 
   #run integration tests on firebase
-#  - TERM=dumb ./gradlew assembleDebug
+  - TERM=dumb ./gradlew assembleDebug
   - TERM=dumb ./gradlew packageDebugAndroidTest
 
   #run firebase tests
