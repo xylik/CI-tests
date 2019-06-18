@@ -10,15 +10,16 @@ jdk: oraclejdk8
 env:
   global:
     #- GRADLE_OPTS='-Dorg.gradle.daemon=false -Dorg.gradle.parallel=false -Dkotlin.incremental=false -DdisablePreDex'
-    - ADB_INSTALL_TIMEOUT=10 # minutes
+    #- ADB_INSTALL_TIMEOUT=10 # minutes
   matrix:
-    #- SYS=22 API="default" ABI="x86"
+    #- SYS=21 API="defalt" ABI="x86"
+    #- SYS=22 API="defalt" ABI="x86"
     - SYS=23 API="default" ABI="x86"
-    - SYS=24 API="default" ABI="x86"
-    - SYS=25 API="default" ABI="x86"
-    - SYS=26 API="default" ABI="x86"
-    - SYS=27 API="default" ABI="x86"
-    - SYS=28 API="default" ABI="x86"
+    #- SYS=24 API="default" ABI="x86"
+    #- SYS=25 API="default" ABI="x86"
+    #- SYS=26 API="default" ABI="x86"
+    #- SYS=27 API="default" ABI="x86"
+    #- SYS=28 API="default" ABI="x86"
 
 branches:
   only:
@@ -59,6 +60,17 @@ before_install:
   - cp -f ./scripts/config.ini ~/.android/avd/test.avd/
   - echo "image.sysdir.1=system-images/android-$SYS/$API/$ABI/" >> ~/.android/avd/test.avd/config.ini
 
+  # Install Google Cloud SDK
+  - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash; fi
+  - source /home/travis/google-cloud-sdk/path.bash.inc
+  - gcloud --quiet version
+  - gcloud --quiet components update
+  # Activate Google Cloud credentials
+  - openssl -aes-256-cbc -d -pass pass:$FIREBASE_JSON_PASS -in gcloud-service-key.json.enc -out gcloud-service-key.json
+  - gcloud auth activate-service-account --key-file gcloud-service-key.json
+  # Setup Google Cloud project
+  - gcloud config set project "firebase-playground"
+
 script:
   #list hardware spec
   - sudo lshw -C display
@@ -68,22 +80,34 @@ script:
   #- $ANDROID_HOME/emulator/emulator -accel-check
 
   #start emulator
-  - EMU_GPU="swiftshader_indirect" #guest,off
-  - EMU_OPTIONS="-no-window -no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
+  #- EMU_GPU="swiftshader_indirect" #guest,off
+  #- EMU_OPTIONS="-no-window -no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
   #- EMU_OPTIONS="-no-accel -gpu $EMU_GPU -no-audio -no-snapshot -wipe-data"
-  - $ANDROID_HOME/emulator/emulator -avd test $EMU_OPTIONS &
+  #- $ANDROID_HOME/emulator/emulator -avd test $EMU_OPTIONS &
 
   #wait for emulator
-  - chmod +x ./scripts/android-wait-for-emulator.sh
-  - ./scripts/android-wait-for-emulator.sh
-  - chmod +x ./scripts/close-anr.sh
-  - ./scripts/close-anr.sh
-  - chmod +x ./scripts/wait-for-emulator.sh
-  - ./scripts/wait-for-emulator.sh
-  - ./scripts/close-anr.sh
+  #- chmod +x ./scripts/android-wait-for-emulator.sh
+  #- ./scripts/android-wait-for-emulator.sh
+  #- chmod +x ./scripts/close-anr.sh
+  #- ./scripts/close-anr.sh
+  #- chmod +x ./scripts/wait-for-emulator.sh
+  #- ./scripts/wait-for-emulator.sh
+  #- ./scripts/close-anr.sh
 
   #start ui tests
-  - chmod +x gradlew
-  - adb logcat -s TestRunner:V & LOGCAT_PID=$!
-  - TERM=dumb ./gradlew connectedAndroidTest --stacktrace
-  - if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
+  #- chmod +x gradlew
+  #- adb logcat -s TestRunner:V & LOGCAT_PID=$!
+  #- TERM=dumb ./gradlew connectedAndroidTest --stacktrace
+  #- if [ -n "$LOGCAT_PID" ] ; then kill $LOGCAT_PID; fi
+
+  #run integration tests on firebase
+#  - TERM=dumb ./gradlew assembleDebug
+  - TERM=dumb ./gradlew packageDebugAndroidTest
+
+  #run firebase tests
+  - gcloud firebase test android run
+    --type instrumentation
+    --app scripts/dummy-instrumentation.apk
+    --test app/build/outputs/apk/debug/app-debug.apk
+    --device model=NexusLowRes,version=24,locale=de,orientation=portrait
+    --timeout 300s
